@@ -1,6 +1,5 @@
 ---
 - name: Patch Linux system
-  hosts: node1
   remote_user: ansible
   become: true
   ignore_errors: yes
