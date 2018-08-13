@@ -3,30 +3,30 @@
   hosts: node1
   remote_user: ansible
   become: true
-        
+  ignore_errors: yes
+
   tasks:
     - name: Check RHN or local repository connectivity
-      shell:  yum repolist  > /dev/null 2>&1; if [ $? -eq 0 ]; then echo "Repository found"; else echo "No repository found"; fi
+      shell:
+        cmd: yum repolist  > /dev/null 2>&1; if [ $? -eq 0 ]; then echo "Repository found"; else echo "No repository found"; fi
       register: repo_status
                       
     - name: Failed if no repository found
       fail:
-        msg: "{{ inventory_hostname }} repository not found"
-      when: repo_status.stdout == No repository found
+        msg: "repository not found on {{ ansible_hostname }}"
+      when: repo_status.stdout != "Repository found"
                                                                   
-    - name: Check Apache is running or not
-      shell: systemctl status httpd >/dev/null 2>&1; if [ $? -eq 0 ]; then echo 'httpd is running'; else echo 'httpd not running'; fi
-      register: apache_status
+    - name: Check vsftpd running or not
+      shell: 
+        cmd: systemctl status vsftpd >/dev/null 2>&1; if [ $? -eq 0 ]; then echo 'vsftpd is running'; else echo 'vsftpd not running'; fi
+      register: vsftpd_status
                                                                                 
-    - name: Failed if Apache is running
+    - name: Failed if vsftpd is running
       fail:
-        msg: "{{ inventory_hostname }} httpd running"
-      when: apache_status.stdout == httpd is running
-                                                                                         
-    - debug:
-        msg: 'No repository found'
-      when: repo_status.stdout is failed
-
-    - debug:
-        msg: 'Httpd is running'
-      when: apache_status.stdout is failed
+        msg: "vsftpd running on {{ ansible_hostname }}"
+      when: vsftpd_status.stdout != "vsftpd not running"
+   
+    - name: Apply patches
+      shell:
+        cmd: yum update -y
+      when: vsftpd_status.stdout == "vsftpd not running" and repo_status.stdout == "Repository found"
