@@ -23,6 +23,10 @@
         msg: "{{ inventory_hostname }} httpd running"
       when: apache_status.stdout == httpd is running
                                                                                          
-    - name: Apply patch on the system
-      shell: yum update -y
-      when: repo_status.stdout == Repository found and apache_status == httpd not running 
+    - debug:
+        msg: 'No repository found'
+      when: repo_status.stdout is failed
+
+    - debug:
+        msg: 'Httpd is running'
+      when: apache_status.stdout is failed
