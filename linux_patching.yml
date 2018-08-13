@@ -6,32 +6,26 @@
         
   tasks:
     - name: Check RHN or local repository connectivity
-      shell:  yum repolist  > /dev/null 2>&1; if [ $? -eq 0 ]; then echo "Repository found..Ready to apply patch"; else echo "System is not reqisterred ! No repository found.."; fi
+      shell:  yum repolist  > /dev/null 2>&1; if [ $? -eq 0 ]; then echo "Repository Configured"; else echo "No valid repository"; fi
       register: repo_status
-      ignore_errors: yes
                       
     - name: Failed if no repository found
-      fail:
+      debug:
         msg: "{{ inventory_hostname }} doesnot have repository configured"
-      when: repo_status.stdout == Repository found..Ready to apply patch
+      when: repo_status.stdout == No valid repository
       ignore_errors: yes
-                                                                  
+      
     - name: Check Apache is running or not
-      shell: systemctl status httpd >/dev/null 2>&1; if [ $? -eq 0 ]; then echo 'httpd is running'; else echo 'httpd in not running'; fi
+      shell: systemctl status httpd >/dev/null 2>&1; if [ $? -eq 0 ]; then echo 'httpd is running'; else echo 'httpd is not running'; fi
       register: apache_status
-      ignore_errors: yes
                                                                                 
     - name: Failed if Apache is running
-      fail:
+      debug:
         msg: "{{ inventory_hostname }} running apache application"
       when: apache_status.stdout == httpd is running
       ignore_errors: yes
                                                                                          
     - name: Apply patch on the system
       shell: yum update -y
-      when: apache_status.stdout == httpd is not running and repo_status.stdout == Repository found..Ready to apply patch
-      ignore_errors: yes
-
-    - debug:
-        msg: "Apply patching on the system is failed"
-      when: repo_status is failed and apache_status is failed
+      when: apache_status.stdout == httpd is not running and repo_status.stdout == Repository Configured
+  
