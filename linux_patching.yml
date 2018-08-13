@@ -1,0 +1,13 @@
+---
+- name: Patch Linux system
+  hosts: all
+  remote_user: ansible
+  become: true
+  
+  tasks:
+    - name: Check Apache is running or not
+      shell: systemctl status httpd >/dev/null 2>&1; if [ $? -eq 0 ]; then echo 'httpd is running'; else echo 'httpd in not running'; fi
+    - name: Check RHN or local repository connectivity
+      shell: yum repolist
+      resister: exist
+      
