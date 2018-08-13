@@ -1,6 +1,0 @@
-[devwebserver]
-node1
-
-[prod]
-node2
-ftpserver
