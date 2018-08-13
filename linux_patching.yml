@@ -7,7 +7,7 @@
   tasks:
     - name: Check RHN or local repository connectivity
       shell:  yum repolist  > /dev/null 2>&1; if [ $? -eq 0 ]; then echo "Repository found..Ready to apply patch"; else echo "System is not reqisterred ! No repository found.."; fi
-      resister: repo_status
+      register: repo_status
       
     - name: Failed if no repository found
       fail:
