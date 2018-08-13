@@ -5,11 +5,24 @@
   become: true
   
   tasks:
-    - name: Check Apache is running or not
-      shell: systemctl status httpd >/dev/null 2>&1; if [ $? -eq 0 ]; then echo 'httpd is running'; else echo 'httpd in not running'; fi
     - name: Check RHN or local repository connectivity
       shell:  yum repolist  > /dev/null 2>&1; if [ $? -eq 0 ]; then echo "Repository found..Ready to apply patch"; else echo "System is not reqisterred ! No repository found.."; fi
-
-    - name: Apply patch
-      shell: yum update -y
+      resister: repo_status
       
+    - name: Failed if no repository found
+      fail:
+        msg: {{ inventory_hostname }} doesnot have repository configured
+      when: repo_status.stdout == Repository found..Ready to apply patch
+      
+    - name: Check Apache is running or not
+      shell: systemctl status httpd >/dev/null 2>&1; if [ $? -eq 0 ]; then echo 'httpd is running'; else echo 'httpd in not running'; fi
+      register: apache_status
+    
+    - name: Failed if Apache is running
+      fail:
+        msg: {{ inventory_hostname }} running apache application
+      when: apache_status.stdout == httpd is running
+
+    - name: Apply patch on the system
+      shell: yum update -y
+      when: apache_status.stdout == httpd is not running and repo_status.stdout == Repository found..Ready to apply patch
