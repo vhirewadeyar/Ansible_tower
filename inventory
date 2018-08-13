@@ -1,4 +1,4 @@
-[devserver]
+[devwebserver]
 node1
 
 [prod]
