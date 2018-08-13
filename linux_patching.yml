@@ -11,7 +11,7 @@
       
     - name: Failed if no repository found
       fail:
-        msg: {{ inventory_hostname }} doesnot have repository configured
+        msg: "{{ inventory_hostname }} doesnot have repository configured"
       when: repo_status.stdout == Repository found..Ready to apply patch
       
     - name: Check Apache is running or not
@@ -20,7 +20,7 @@
     
     - name: Failed if Apache is running
       fail:
-        msg: {{ inventory_hostname }} running apache application
+        msg: "{{ inventory_hostname }} running apache application"
       when: apache_status.stdout == httpd is running
 
     - name: Apply patch on the system
